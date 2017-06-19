@@ -1,0 +1,119 @@
+%\VignetteIndexEntry{VCFAssociationHelper}
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage[tableposition=top]{caption}
+\usepackage{ifthen}
+\usepackage[utf8]{inputenc}
+
+\begin{document}
+
+\title{VCFAssociationHelper Package}
+\author{Zhangchen Zhao, Seunggeun (Shawn) Lee}
+\maketitle
+
+\section{Overview}
+VCFAssociationHelper package has functions to 1) covert VCF file to Plink file or SSD file; 2) open SSD file and get the genotypes to perform association tests; 3) read VCF file.
+
+
+
+\section{Convert VCF files}
+
+\subsection{Convert VCF to Plink}
+An example dataset (Example.vcf.gz) is a small VCF file with 300 SNP information. 
+
+<<Plink>>=
+library(VCFAssociationHelper)
+VCF_file =paste(path.package("VCFAssociationHelper"),"/extdata/Example.vcf.gz",sep="")  
+PlinkPrefix = paste(path.package("VCFAssociationHelper"),"/extdata/Example.plink",sep="")  
+nmax=1000
+system.time({Convert_VCFtoPlink ( VCF_file, PlinkPrefix, nmax)})
+@
+
+
+
+\subsection{Convert VCF to SSD}
+In order to convert to SSD, SetID file is needed. Examples of three formats of SetID (SetID1.txt, SetID2.txt, SetID3.txt) are given. If no SetID file, the default SetID file is used. 
+
+<<SSD>>=
+# SetID with SNPID
+VCF_file =paste(path.package("VCFAssociationHelper"),"/extdata/Example.vcf.gz",sep="")  
+SetID = paste(path.package("VCFAssociationHelper"),"/extdata/SetID1.txt",sep="")  
+SSD=paste(path.package("VCFAssociationHelper"),"/extdata/SSD1",sep="") 
+SetIDFormat="SNPID"
+nmax=100000
+system.time({Convert_VCFtoSSD ( VCF_file,  SSD, SetID, SetIDFormat, nmax)})
+
+# SetID with POS
+VCF_file =paste(path.package("VCFAssociationHelper"),"/extdata/Example.vcf.gz",sep="")  
+SetID = paste(path.package("VCFAssociationHelper"),"/extdata/SetID2.txt",sep="")  
+SSD=paste(path.package("VCFAssociationHelper"),"/extdata/SSD2",sep="") 
+SetIDFormat="POS"
+nmax=100000
+system.time({Convert_VCFtoSSD ( VCF_file,  SSD, SetID, SetIDFormat, nmax)})
+
+# SetID with SNPID
+VCF_file =paste(path.package("VCFAssociationHelper"),"/extdata/Example.vcf.gz",sep="")  
+SetID = paste(path.package("VCFAssociationHelper"),"/extdata/SetID3.txt",sep="")  
+SSD=paste(path.package("VCFAssociationHelper"),"/extdata/SSD3",sep="") 
+SetIDFormat="Region"
+nmax=100000
+system.time({Convert_VCFtoSSD ( VCF_file,  SSD, SetID, SetIDFormat, nmax)})
+@
+
+The SSD and SSD info files are generated through Convert\_VCFtoSSD function. SSD info contains basic information of SSD file. 
+
+
+
+\section{Association test}
+
+
+\subsection{Get genotypes from SSD}
+<<geno>>=
+#Open SSD file first.
+SSD=paste(path.package("VCFAssociationHelper"),"/extdata/SSD3",sep="") 
+SSDinfo=paste(SSD,"info",sep="") 
+ssdtemp=OpenSSD(SSD, SSDinfo)
+Set_Index=1
+
+#Get the genotypes from SSD.
+geno=GetGenotypesSSD(ssdtemp, Set_Index, is_ID = FALSE)
+
+#SSD must be closed after finishing the test!
+CloseSSD()
+@
+
+\section{Read VCF file}
+\subsection{Read VCF from the first line}
+<<VCFread>>=
+VCF_file =paste(path.package("VCFAssociationHelper"),"/extdata/Example.vcf.gz",sep="")  
+
+#Open VCF file with GT format.
+vcf_info=OpenVCF(VCF_file,"GT")
+
+#Get the genotype information of the first line in VCF file.
+geno1=GetGenotypesVCF( vcf_info)
+
+#Get the genotype information of the second line in VCF file.
+geno2=GetGenotypesVCF( vcf_info)
+CloseVCF()
+@
+
+\subsection{Read a specific region in VCF}
+<<VCFregion_read>>=
+VCF_file =paste(path.package("VCFAssociationHelper"),"/extdata/Example.vcf.gz",sep="")  
+vcf_info=OpenVCF(VCF_file,"GT")
+
+#Select the region: chromosome 22, position 17000000~20000000.
+GetGenotypesRegionVCF( vcf_info,22,17000000,20000000)
+
+geno1=GetGenotypesVCF( vcf_info)
+geno2=GetGenotypesVCF( vcf_info)
+CloseVCF()
+@
+
+
+
+\end{document}
+

@@ -1,0 +1,15 @@
+useDynLib(VCFAssociationHelper,.registration = TRUE)
+
+
+# functions
+export(Convert_VCFtoPlink, Convert_VCFtoSSD, CloseSSD, OpenSSD, GetGenotypesSSD,CloseVCF,OpenVCF,GetGenotypesVCF,GetGenotypesRegionVCF)
+
+     importFrom("graphics", "abline", "legend", "plot", "points")
+     importFrom("stats", "approxfun", "dbeta", "dchisq", "get_all_vars",
+     "glm", "integrate", "lm", "median", "model.frame",
+     "model.matrix", "model.response", "na.omit", "na.pass",
+     "pchisq", "predict", "qchisq", "qqplot", "quantile",
+     "rbinom", "rmultinom", "rnorm", "runif", "sd",
+     "smooth.spline", "uniroot", "var")
+     importFrom("utils", "data", "read.delim", "read.table", "write.table")
+ 

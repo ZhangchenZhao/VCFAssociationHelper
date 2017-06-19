@@ -1,0 +1,13 @@
+Package: VCFAssociationHelper
+Type: Package
+Title: VCF read package
+Version: 0.03
+Date: 2017-06-18
+Author: Zhangchen Zhao, Seunggeun (Shawn) Lee
+Maintainer: Zhangchen Zhao <zczhao@umich.edu>
+Description: Functions for reading VCF file, transferring VCF file to Plink file and SSD file, and reading SSD file for association test.  
+Depends: Rhtslib
+License: GPL(>=2)
+LinkingTo: Rhtslib, zlibbioc
+NeedsCompilation: yes
+Packaged: 2017-02-10 15:53:57 UTC; LEE7801

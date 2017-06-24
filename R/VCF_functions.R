@@ -130,7 +130,7 @@ Convert_VCFtoSSD <- function(VCF_file, SSD_file, SetID_file=NULL, SetIDFormat, n
 	}
 	err_code<-0
 	VCF_file<-normalizePath(VCF_file ,mustWork =FALSE)
-	PlinkPrefix<-paste(VCF_file,"plink",sep=".")
+	PlinkPrefix<-paste(SSD_file,"plink",sep=".")
 	SetID_file<-normalizePath(SetID_file ,mustWork =FALSE)
 	SSD_file<-normalizePath(SSD_file ,mustWork =FALSE)
 	ssdinfo<-paste(SSD_file,"info",sep=".")

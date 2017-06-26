@@ -130,12 +130,13 @@ Convert_VCFtoSSD <- function(VCF_file, SSD_file, SetID_file=NULL, SetIDFormat, n
 	}
 	err_code<-0
 	VCF_file<-normalizePath(VCF_file ,mustWork =FALSE)
-	PlinkPrefix<-paste(SSD_file,"plink",sep=".")
+	
 	SetID_file<-normalizePath(SetID_file ,mustWork =FALSE)
 	SSD_file<-normalizePath(SSD_file ,mustWork =FALSE)
 	ssdinfo<-paste(SSD_file,"info",sep=".")
 	Check_File_Exists(VCF_file)	
 	Check_File_Exists(SetID_file)
+	PlinkPrefix<-paste(SSD_file,"plink",sep=".")
 	SetIDtype<-0
 	if (SetIDFormat=="SNPID") { SetIDtype=1} else {
 		if (SetIDFormat=="POS") { SetIDtype=2} else {

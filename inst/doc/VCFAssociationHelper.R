@@ -39,7 +39,7 @@ nmax=100000
 system.time({Convert_VCFtoSSD ( VCF_file,  SSD, SetID, SetIDFormat, nmax)})
 
 
-###################################################
+###################################################	
 ### code chunk number 3: geno
 ###################################################
 #Open SSD file first.
@@ -77,10 +77,15 @@ CloseVCF()
 VCF_file =paste(path.package("VCFAssociationHelper"),"/extdata/Example.vcf.gz",sep="")  
 vcf_info=OpenVCF(VCF_file,"GT")
 
-#Select the region: chromosome 22, position 17000000~20000000.
-GetGenotypesRegionVCF( vcf_info,22,17000000,20000000)
-
+#Select the region: chromosome 22, position 16000000~17000000.
+#Method 1: read genotype information one line by one line
+GetGenotypesRegionVCF( vcf_info,22,16000000,17000000)
 geno1=GetGenotypesVCF( vcf_info)
 geno2=GetGenotypesVCF( vcf_info)
+
+#Method 2: read all selected genotype information
+geno_all=GetGeno( vcf_info,22,16000000,17000000)
+head(geno_all[[1]])
 CloseVCF()
+
 

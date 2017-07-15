@@ -400,7 +400,8 @@ int Close_bcf(){
 
 	if(g_hdr != NULL){
 	
-		printf("1\n"); fflush(NULL);
+		//printf("1\n"); 
+		fflush(NULL);
 		bcf_hdr_destroy(g_hdr);
 		g_hdr=NULL;
 	}
@@ -613,7 +614,7 @@ extern "C" {
 		fname = CHAR(STRING_ELT(fname_, 0));
 		regions_list = CHAR(STRING_ELT(regions_list_, 0));
 		
-		printf("[%s][%s]", fname, regions_list);
+		//printf("[%s][%s]", fname, regions_list);
 		//return R_NilValue;
 		
 		re =  VCF_FILE_ID->SetRegion((char *) fname, (char *)regions_list);

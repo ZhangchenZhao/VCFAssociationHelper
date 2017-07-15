@@ -6,7 +6,7 @@
 #include <cstring>
 
 #include "PlinkBed.h"
-
+#include <cerrno>
 CPlinkBed_Write::CPlinkBed_Write(){
     
     Is_FileName=false;
@@ -35,23 +35,32 @@ int     CPlinkBed_Write::Init(size_t nSampleSize){
         return 0;
     }
 
+
     /* Open Bed and Bim files */
+	
     m_BedFile.open(m_BedFileName.c_str(), std::ofstream::out | std::ofstream::binary);
+	
+	//m_BedFile.open(m_BedFileName.c_str(), std::ios::out | std::ios::binary);
+	
 	if (!m_BedFile)
 	{
         printf("Cannot open %s\n", m_BedFileName.c_str());
+	std::cout << strerror(errno) << '\n'; 
 		return 0;
 	}
     // write magic number
     m_BedFile.write(m_magic_num, 3 * sizeof(char));
     
     m_BimFile.open(m_BimFileName.c_str(), std::ofstream::out );
+//	m_BimFile.open(m_BimFileName.c_str());
 	if (!m_BimFile)
 	{
         printf("Cannot open %s\n", m_BimFileName.c_str());
 		return 0;
 	}
-    
+
+
+
     // Set other values
     m_nSNP=0;
     m_nSample = nSampleSize;

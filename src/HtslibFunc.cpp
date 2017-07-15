@@ -486,7 +486,7 @@ int Convert_BCF_to_SSD_step2(const char *ssd, const char *PlinkPrefix,  std::vec
 		}
 
 		buff[0] = '\0';
-		//moving inside of *.bed to reach specified location of specified snp - based on lookup table: ht->m_hash_table[j]
+			//moving inside of *.bed to reach specified location of specified snp - based on lookup table: ht->m_hash_table[j]
 		//then read from there exactly one line 
     	       
 
@@ -784,12 +784,13 @@ int Convert_BCF_to_SSD(const char *ssd, CPlinkBed_Write * PlinkBed, const char *
     size_t nSample = bcf_hdr_nsamples(hdr);//nSample == lines of fam file? ;
     
     
-   
+   	
     /* Init(const char * FilePrefix, bool AddLocalTime=true, size_t nSampleSize=0); */
     if(PlinkBed->Init(nSample) == 0){
         printf("Error: CPlinkBed Init!\n");
         return 0;
     }
+
     PlinkBed->Write_FamFile(hdr->samples);
     int * genotypes = new int[nSample];
 

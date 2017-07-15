@@ -51,9 +51,10 @@ GetGenotypesVCF<-function(VCF_info){
 	##geno$temp=	
 	Z.out.t<-matrix(temp[[1]],byrow=TRUE, nrow=1)
 	
-	geno$SNPID=rawToChar(temp[[6]])
-	geno$chromosome=rawToChar(temp[[4]])
-	geno$position=temp[[5]]
+	SNPID=rawToChar(temp[[6]])
+	chromosome=rawToChar(temp[[4]])
+	position=temp[[5]]
+	geno$info=cbind(SNPID,chromosome,position)
 	geno$genotypes=Z.out.t
 
 	return(geno)
@@ -179,3 +180,103 @@ Get_Next_Genotypes<-function(){
 	names(re)<-c("Genotype", "Pos")
 	return(re)
 }
+
+
+
+
+
+
+
+
+
+
+GetGeno<-function(VCF_info,chromosome=1,pos_start=NA,pos_end=NA){
+ 	options("scipen"=100, "digits"=4)
+	region=chromosome
+	if (is.na(pos_start)) {
+		print(sprintf("The start position is missing.\n"))
+		if (is.na(pos_end)) {
+			print(sprintf("The end position is also missing.The whole chromosome will be read.\n"))
+			regions=region
+		} else {
+			print(sprintf("The program will read from the position 1.\n"))
+			pos_start=1
+			regions=paste(region,":",pos_start,"-",pos_end,sep="")
+		}
+	} else {
+		if (is.na(pos_end)){
+			stop("Please provide the end position!")} else {
+		if (pos_end<pos_start){stop("Wrong position setting!")}
+		regions=paste(region,":",pos_start,"-",pos_end,sep="")
+		}
+	}
+
+	if(get("Helper_Lines_OPEN.isOpen", envir=lines.env) == 0){
+		stop("VCF file is not opened. Please open it first!")
+	}
+	
+
+	err_code<-0
+
+	SetID_file=paste(path.package("VCFAssociationHelper"),"/extdata/refGene.txt",sep="")
+	pos_status=rep(FALSE, pos_end-pos_start+1)
+	con <- file(SetID_file, "r")
+	flag2=0
+	line=1
+	out=list("SNP info"="","Genotype Matrix"="")
+	while( length(line) != 0 ) {
+     		line=readLines(con,n=1)
+		a=strsplit(line,"\t")
+		if (length(a)>=1){
+		if (a[[1]][3]==paste("chr",chromosome,sep="")){
+			b1=strsplit(a[[1]][10],",",fixed=TRUE)
+			b2= strsplit(a[[1]][11],",",fixed=TRUE)
+			n1=length(b1[[1]])
+			n2=length(b2[[1]])
+			for (i in 1:min(n1,n2)){
+				pos_int1=as.numeric(b1[[1]][i])
+				pos_int2=as.numeric(b2[[1]][i])
+				flag1=0;
+				if (pos_int1<=pos_end & pos_int2>= pos_start){
+					if (pos_start<=pos_int1 ) {
+						if (pos_end>=pos_int2){ flag1=1;} else{ pos_int2=pos_end;flag1=1;}} else { 
+						pos_int1=pos_start;
+						if (pos_end>=pos_int2){flag1=1;} else {pos_int2=pos_end;flag1=1;}
+						 
+					}
+				}
+				if (flag1==1){
+					geno_temp=GetGenotypesRegionVCF( VCF_info,chromosome,pos_int1,pos_int2);
+					geno1=GetGenotypesVCF(VCF_info)
+								
+					while (geno1[[1]][1]!=""){
+						if (flag2==0){out=geno1;flag2=1;pos_status[as.numeric(geno1[[1]][3])-pos_start+1]=TRUE;} else {
+							if (pos_status[as.numeric(geno1[[1]][3])-pos_start+1]==FALSE){
+								out[[1]]=rbind(out[[1]],geno1[[1]])
+								out[[2]]=rbind(out[[2]],geno1[[2]])
+								pos_status[as.numeric(geno1[[1]][3])-pos_start+1]=TRUE;
+							}
+						}
+						geno1=GetGenotypesVCF(VCF_info)
+
+					}
+
+				}
+
+			}
+
+		}
+		}
+	
+	}
+
+	close(con)
+
+	return(out)
+
+
+
+}
+
+
+

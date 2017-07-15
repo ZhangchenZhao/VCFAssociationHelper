@@ -131,12 +131,13 @@ Convert_VCFtoSSD <- function(VCF_file, SSD_file, SetID_file=NULL, SetIDFormat, n
 	err_code<-0
 	VCF_file<-normalizePath(VCF_file ,mustWork =FALSE)
 	
+##PlinkPrefix<-SSD_file
 	SetID_file<-normalizePath(SetID_file ,mustWork =FALSE)
 	SSD_file<-normalizePath(SSD_file ,mustWork =FALSE)
+	PlinkPrefix<-paste(SSD_file,"plink",sep=".")
 	ssdinfo<-paste(SSD_file,"info",sep=".")
 	Check_File_Exists(VCF_file)	
 	Check_File_Exists(SetID_file)
-	PlinkPrefix<-paste(SSD_file,"plink",sep=".")
 	SetIDtype<-0
 	if (SetIDFormat=="SNPID") { SetIDtype=1} else {
 		if (SetIDFormat=="POS") { SetIDtype=2} else {
@@ -150,15 +151,12 @@ Convert_VCFtoSSD <- function(VCF_file, SSD_file, SetID_file=NULL, SetIDFormat, n
 	}
 
 		
-
+	print(PlinkPrefix)
     temp<-.C("Convert_BCFtoSSD", as.character(SSD_file), as.character(PlinkPrefix),as.character(VCF_file),as.character(SetID_file), as.integer(SetIDtype),as.integer(nmax), as.integer(err_code))
 	error_code<-temp[[7]]
 	cat(error_code)
 	
-	
-##	Bed=paste(PlinkPrefix,"bed",sep=".")
-##	Bim=paste(PlinkPrefix,"bim",sep=".")
-##	Fam=paste(PlinkPrefix,"fam",sep=".")
+
 
 	
 }

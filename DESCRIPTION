@@ -1,7 +1,7 @@
 Package: VCFAssociationHelper
 Type: Package
 Title: VCF read package
-Version: 0.03
+Version: 0.04
 Date: 2017-06-18
 Author: Zhangchen Zhao, Seunggeun (Shawn) Lee
 Maintainer: Zhangchen Zhao <zczhao@umich.edu>

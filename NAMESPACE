@@ -2,7 +2,7 @@ useDynLib(VCFAssociationHelper,.registration = TRUE)
 
 
 # functions
-export(Convert_VCFtoPlink, Convert_VCFtoSSD, CloseSSD, OpenSSD, GetGenotypesSSD,CloseVCF,OpenVCF,GetGenotypesVCF,GetGenotypesRegionVCF)
+export(Convert_VCFtoPlink, Convert_VCFtoSSD, CloseSSD, OpenSSD, GetGenotypesSSD,CloseVCF,OpenVCF,GetGenotypesVCF,GetGenotypesRegionVCF,GetGeno)
 
      importFrom("graphics", "abline", "legend", "plot", "points")
      importFrom("stats", "approxfun", "dbeta", "dchisq", "get_all_vars",

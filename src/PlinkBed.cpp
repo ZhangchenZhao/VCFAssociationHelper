@@ -110,16 +110,17 @@ int     CPlinkBed_Write::Generate_FileName(const char * FilePrefix, bool AddTemp
 }
     
 
-int     CPlinkBed_Write::Write_OneSNP(const char * chr, size_t pos, const char * A1, const char * A2, int * genotype){
+int     CPlinkBed_Write::Write_OneSNP(const char * snp1,const char * chr, size_t pos, const char * A1, const char * A2, int * genotype){
     
     char str[10000];
     
     // Bim file
-    sprintf(str,"%s %s:%zu 0 %zu %s %s\n", chr, chr, pos, pos, A1, A2);
+    sprintf(str,"%s %s 0 %zu %s %s\n", chr,snp1, pos, A1, A2);
     m_BimFile << str;
 
     // Bed file
-    BedFile_encode(genotype, m_buffer, m_nSample, m_size_of_esi);
+    BedFile_encode1(genotype, m_buffer, m_nSample, m_size_of_esi,1);
+	
     m_BedFile.write(m_buffer, m_size_of_esi* sizeof(char));
 
     
@@ -136,6 +137,18 @@ int     CPlinkBed_Write::Write_OneSNP(const char * chr, size_t pos, const char *
 }
 
 
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  (byte & 0x80 ? '1' : '0'), \
+  (byte & 0x40 ? '1' : '0'), \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0') 
+
+
 int     CPlinkBed_Write::Write_OneSNP1(const char * snp1, const char * chr, size_t pos, const char * A1, const char * A2, int * genotype){
     
     char str[10000];
@@ -145,7 +158,15 @@ int     CPlinkBed_Write::Write_OneSNP1(const char * snp1, const char * chr, size
     m_BimFile << str;
 
     // Bed file
-    BedFile_encode(genotype, m_buffer, m_nSample, m_size_of_esi);
+    BedFile_encode1(genotype, m_buffer, m_nSample, m_size_of_esi,1);
+	//printf("[%d]\n",m_nSample);
+	//printf("[%d:%d:%d:%d:%d:%d]\n",genotype[0],genotype[1],genotype[2],genotype[3],genotype[4],genotype[5]);
+	//printf("[%c:%c:%c:%c:%c:%c]\n",m_buffer[0],m_buffer[1],m_buffer[2],m_buffer[3],m_buffer[4],m_buffer[5]);
+	//printf(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(m_buffer[0]));
+	//printf("\n");
+	//printf(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(m_buffer[1]));
+	//printf("\n");
+
     m_BedFile.write(m_buffer, m_size_of_esi* sizeof(char));
 
     
@@ -235,7 +256,7 @@ int     CPlinkBed_Write::Delete_BedBim_Files(){
 // Compataible to plink bed file encode
 // This encode is different from encode in bed_reader.cpp
 //==========================================================
-void BedFile_encode(int* temp_snp_info,char* encoded_snp_info, size_t nsample, size_t size_of_esi)
+void BedFile_encode(int* temp_snp_info,char* encoded_snp_info, size_t nsample, size_t size_of_esi, bool IsMakePlinkFile)
 {
     
 	size_t i = 0;
@@ -252,7 +273,7 @@ void BedFile_encode(int* temp_snp_info,char* encoded_snp_info, size_t nsample, s
 	{
 		memset(a, 0, sizeof(a));
 		for (j = 0; j < 4; ++j)
-		{
+		{	
 			if (temp_snp_info[i] == 9) //missing value
 			{
                 // different from bed_reader.cpp encode
@@ -287,14 +308,86 @@ void BedFile_encode(int* temp_snp_info,char* encoded_snp_info, size_t nsample, s
 			//==============================================
 			//converting 8 ints of "a" to one encoded number
 			//for example a= 00100010 "number" will be: 34
-			for (int  ii = 0; ii < 8; ++ii)
-				number += a[ii] * (int)pow(2.0,(7-ii));
+			for (int  ii = 0; ii < 8; ++ii){
+				if(IsMakePlinkFile){
+					number += a[ii] * (int)pow(2.0,ii);
+				} else {
+					number += a[ii] * (int)pow(2.0,(7-ii));
+				}
+			}
 			//saving this encoded number.
 			encoded_snp_info[ind4enc-1] = (char)number;
 			//=============================================
 		}
 	}
 }
+
+void BedFile_encode1(int* temp_snp_info,char* encoded_snp_info, size_t nsample, size_t size_of_esi, bool IsMakePlinkFile)
+{
+    
+	size_t i = 0;
+	unsigned int j = 0;
+	int number = 0;
+	size_t ind4enc = 0;
+	int a[8];
+    
+	//=======================================================================================
+	// converting every 4 bytes of temp_snp_info to "a"
+	// "a"- array of 8 integers ("kind of" 8 bits) that will be converted to one encoded number
+	// possible values for temp_snp_info = 9,1,2,0
+	while (i < nsample)
+	{
+		memset(a, 0, sizeof(a));
+		for (j = 0; j < 4; ++j)
+		{	
+			if (temp_snp_info[i] == 9) //missing value
+			{
+                // different from bed_reader.cpp encode
+				a[j*2] = 1;
+				a[j*2+1] = 0;
+			}
+			else if (temp_snp_info[i] == 1)//AG
+			{
+                // different from bed_reader.cpp encode
+				a[j*2] = 0;
+				a[j*2+1] = 1;
+			}
+			else if (temp_snp_info[i] == 0)//GG
+			{
+				a[j*2] = 0;
+				a[j*2+1] = 0;
+			}
+			else if (temp_snp_info[i] == 2)//AA
+			{
+				a[j*2] = 1;
+				a[j*2+1] = 1;
+			}
+			i ++;
+		}
+        
+		ind4enc ++;
+		if (ind4enc == size_of_esi+1)
+			break;
+		else
+		{
+			number = 0;
+			//==============================================
+			//converting 8 ints of "a" to one encoded number
+			//for example a= 00100010 "number" will be: 34
+			for (int  ii = 0; ii < 8; ++ii){
+				if(IsMakePlinkFile){
+					number += a[ii] * (int)pow(2.0,ii);
+				} else {
+					number += a[ii] * (int)pow(2.0,(7-ii));
+				}
+			}
+			//saving this encoded number.
+			encoded_snp_info[ind4enc-1] = (char)number;
+			//=============================================
+		}
+	}
+}
+
 
 //=======================================================================
 // This function split "str" by "delimiters" and put the result to "tokens"

@@ -875,7 +875,7 @@ if (SetIDtype<4) {
         
 	        memset(genotypes, 0, sizeof(int)* nSample);
 	        int n_geno_count = Get_Genotype(hdr, v, genotypes );
-	        //printf("[%d:%d:%d]\n",count, n_geno_count, genotypes[0]);
+	       // printf("[%d:%d:%d:%d:%d:%d]\n",count, n_geno_count, genotypes[0],genotypes[1],genotypes[2],genotypes[3]);
         
 	        PlinkBed->Write_OneSNP1(snp1.c_str(),chr.c_str(), pos, A1.c_str(), A2.c_str(), genotypes);
         
@@ -1029,8 +1029,9 @@ int Convert_BCF_to_PlinkBed(CPlinkBed_Write * PlinkBed, const char *BCF_file, in
         memset(genotypes, 0, sizeof(int)* nSample);
         int n_geno_count = Get_Genotype(hdr, v, genotypes );
         //printf("[%d:%d:%d]\n",count, n_geno_count, genotypes[0]);
-        
-        PlinkBed->Write_OneSNP(chr.c_str(), pos, A1.c_str(), A2.c_str(), genotypes);
+        std::string snp1 = v->d.id;
+
+        PlinkBed->Write_OneSNP(snp1.c_str(), chr.c_str(), pos, A1.c_str(), A2.c_str(), genotypes);
         
         count++;
         if( count % 100000 == 0){

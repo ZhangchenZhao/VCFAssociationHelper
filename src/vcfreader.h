@@ -3,7 +3,10 @@
 #define _VCF_READER_H 
 
 
-
+#include "vcfreader.h"
+#define __STDC_LIMIT_MACROS
+#include "int_info.h"
+ #include <stdint.h> 
 
 #include "zlib.h"
 #include "zconf.h"

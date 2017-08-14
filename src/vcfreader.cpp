@@ -1,5 +1,8 @@
 #include "vcfreader.h"
-
+#define __STDC_LIMIT_MACROS
+#include "int_info.h"
+//#include <cstdint> 
+ #include <stdint.h> 
 
 static VCFFileReader* VCF_FILE_ID = NULL;
 

@@ -1,3 +1,7 @@
+#define __STDC_LIMIT_MACROS
+//#include <cstdint> 
+#include "int_info.h"
+ #include <stdint.h> 
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstdio>

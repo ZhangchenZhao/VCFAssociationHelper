@@ -10,7 +10,10 @@
  *
  * ver 1.1
  **************************************************************/
-
+#define __STDC_LIMIT_MACROS
+//#include <cstdint> 
+#include "int_info.h"
+ #include <stdint.h> 
 
 #include <bitset>
 #include <fstream>

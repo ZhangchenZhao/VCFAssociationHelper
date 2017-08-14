@@ -1,9 +1,12 @@
+#define __STDC_LIMIT_MACROS
+#include "int_info.h"
+ #include <stdint.h> 
 #include <R.h>
 #include <Rinternals.h>
 #include <Rdefines.h>
 #include "hts.h"
-#include "zlib.h"
-#include "zconf.h"
+//#include "zlib.h"
+//#include "zconf.h"
 
 #include "HtslibFunc.h"
 

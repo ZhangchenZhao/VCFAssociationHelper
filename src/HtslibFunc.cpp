@@ -3,6 +3,7 @@
 //	#include "PlinkBed.h" should be ahead of  #include <Rdefines.h>. There will be error otherwise. 
 #define __STDC_LIMIT_MACROS
 //#include <cstdint> 
+#include "int_info.h"
  #include <stdint.h> 
  #include <limits>
 #include "zlib.h"

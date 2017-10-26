@@ -526,7 +526,7 @@ void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, in
 		*pos = line->pos + 1;	
 		strncpy(snpid , line->d.id, SNP_ID_SIZE_MAX-1);
 		memset(Z, 0, sizeof(int)* nsample);
-		
+		this->v = line;
 		int n_geno_count = this->GetGenotype(this->hdr, this->v, Z );
 
 
@@ -584,6 +584,7 @@ void VCFFileReader::BCF_oneline1(double* Z, int* myerror, int  size , char * chr
 		*pos = line->pos + 1;	
 		strncpy(snpid , line->d.id, SNP_ID_SIZE_MAX-1);
 		memset(Z, 0, sizeof(int)* nsample);
+		this->v=line;
 
 		int n_geno_count = this->GetGenotype1(this->hdr, this->v, Z );
 

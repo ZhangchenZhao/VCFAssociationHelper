@@ -18,7 +18,6 @@ GetGenotypesVCF<-function(VCF_info){
 	
 ############
 	
-	
 	if(get("Helper_Lines_OPEN.isOpen", envir=lines.env) == 0){
 		stop("VCF file is not opened. Please open it first!")
 	}
@@ -38,11 +37,13 @@ GetGenotypesVCF<-function(VCF_info){
 	err_code<-0
 	SNP_ID_SIZE=1024
 	snpid=raw(SNP_ID_SIZE)
+	A1="x"
+	A2="x"
 	if (VCF_info$format=="GT"){
-	temp<-.C("R_BCF_oneline",as.integer(Z), as.integer(err_code),as.integer(size),chr,as.integer(pos),snpid,PACKAGE="VCFAssociationHelper")
+	temp<-.C("R_BCF_oneline",as.integer(Z), as.integer(err_code),as.integer(size),chr,as.integer(pos),snpid,as.character(A1),as.character(A2),PACKAGE="VCFAssociationHelper")
 	}
 	if (VCF_info$format=="DS"){
-	temp<-.C("R_BCF_oneline1",as.double(Z), as.integer(err_code),as.integer(size),chr,as.integer(pos),snpid,PACKAGE="VCFAssociationHelper")
+	temp<-.C("R_BCF_oneline1",as.double(Z), as.integer(err_code),as.integer(size),chr,as.integer(pos),snpid,as.character(A1),as.character(A2),PACKAGE="VCFAssociationHelper")
 	}
 	error_code<-temp[[2]]
 		
@@ -54,7 +55,9 @@ GetGenotypesVCF<-function(VCF_info){
 	SNPID=rawToChar(temp[[6]])
 	chromosome=rawToChar(temp[[4]])
 	position=temp[[5]]
-	geno$info=cbind(SNPID,chromosome,position)
+	allele1=temp[[7]]
+	allele2=temp[[8]]
+	geno$info=cbind(SNPID,chromosome,position,allele1,allele2)
 	geno$genotypes=Z.out.t
 
 	return(geno)
@@ -98,8 +101,9 @@ OpenVCF<-function(File.VCF,format="GT"){
 	size<-0
 	if (format=="GT") {format_1=0} else {if (format=="DS"){format_1=1} else {stop("Wrong genotype format setting!")}}
 	# Read VCF File
+	sample=c("null")
 	temp<-.C("R_Open_VCF", as.character(File.VCF)
-	, as.integer(err_code), as.integer(size),as.integer(format_1), PACKAGE="VCFAssociationHelper")
+	, as.integer(err_code), as.integer(size),as.integer(format_1),PACKAGE="VCFAssociationHelper")
 
 	error_code<-temp[[2]]
 	Print_Error_SSD(error_code)
@@ -114,13 +118,24 @@ OpenVCF<-function(File.VCF,format="GT"){
 
 	#SSD_FILE_OPEN.isOpen<<-1
 	#SSD_FILE_OPEN.FileName<<-File.SSD
+	
 
 	assign("Helper_Lines_OPEN.isOpen", 1, envir=lines.env)
 	assign("Helper_Lines_OPEN.FileName",File.VCF, envir=lines.env)
+
 	INFO=list()
 	INFO$file=File.VCF
 	INFO$format=format
 	INFO$samplesize=temp[[3]]
+
+	SIZE=1024 
+	samples=raw(INFO$samplesize*SIZE)
+	samplesid<-.C("R_getid",samples,PACKAGE="VCFAssociationHelper")
+	
+	ID.m<-matrix(samplesid[[1]], byrow=TRUE, nrow=INFO$samplesize)
+	ID.c<-apply(ID.m, 1, rawToChar)
+
+	INFO$samples=ID.c
 	MSG<-sprintf("Sample size of VCF is \n", INFO$samplesize)
 	cat(Msg)
 	

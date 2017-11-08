@@ -19,31 +19,34 @@ void Close_VCF()
 	delete VCF_FILE_ID;
 }
 
-void BCF_oneline_work( int *Z, int*err, int  size, char * chr, int * pos, char* snpid)
+void BCF_oneline_work( int *Z, int*err, int  size, char * chr, int * pos, char* snpid,char* allele1, char* allele2)
 {
-	VCF_FILE_ID->BCF_oneline( Z, err, size, chr, pos , snpid); //??
+	VCF_FILE_ID->BCF_oneline( Z, err, size, chr, pos , snpid,allele1,allele2); 
 
+}
+
+void BCF_oneline_work1( double *Z, int*err, int  size, char * chr, int * pos, char* snpid,char * allele1,char* allele2)
+{
+	VCF_FILE_ID->BCF_oneline1( Z, err, size, chr, pos , snpid, allele1, allele2); 
 	
 }
 
-void BCF_oneline_work1( double *Z, int*err, int  size, char * chr, int * pos, char* snpid)
+void getid_work(char * samplesid)
 {
-	VCF_FILE_ID->BCF_oneline1( Z, err, size, chr, pos , snpid); //??
-
-	
+	VCF_FILE_ID->getid(samplesid);
 }
 
 extern "C" {
 
 
-void R_BCF_oneline( int *Z, int * err, int * size, char* chr, int * pos,   char * snpid){
+void R_BCF_oneline( int *Z, int * err, int * size, char* chr, int * pos,   char * snpid,char ** allele1, char ** allele2){
 
-	BCF_oneline_work( Z, err, * size, chr, pos, snpid);
+	BCF_oneline_work( Z, err, * size, chr, pos, snpid, allele1[0], allele2[0]);
 }
 
-void R_BCF_oneline1( double *Z, int * err, int * size, char* chr, int * pos,   char * snpid){
+void R_BCF_oneline1( double *Z, int * err, int * size, char* chr, int * pos,   char * snpid,char ** allele1, char ** allele2){
 
-	BCF_oneline_work1( Z, err, * size, chr, pos, snpid);
+	BCF_oneline_work1( Z, err, * size, chr, pos, snpid,allele1[0], allele2[0]);
 }
 
 void R_Open_VCF(char** VCF_File, int * err, size_t * size, int * form)
@@ -57,6 +60,11 @@ void R_Close_VCF()
 	Close_VCF();
 }
 
+
+void R_getid(char * samplesid)
+{
+	getid_work(samplesid);
+}
 /*
 void BCF_search( char *regions, int * err) 
 {
@@ -120,6 +128,8 @@ int VCFFileReader::GetGenotype(bcf_hdr_t *hdr, bcf1_t *v, int * genotype ){
 
     int i,j;
     int n_geno_count=0;
+    int count = 0;bcf_unpack(this->v, BCF_UN_ALL);
+    //std::cout<<"n_fmt"<<v->n_fmt<<endl;
     if ( v->n_fmt){
         
         int gt_i = -1;
@@ -138,17 +148,21 @@ int VCFFileReader::GetGenotype(bcf_hdr_t *hdr, bcf1_t *v, int * genotype ){
             }
         }
         i = gt_i;
+	//std::cout<<"gt_i"<<gt_i<<endl;
+	//std::cout<<"i"<<i<<endl;
+	//std::cout<<"n_sample"<<v->n_sample<<endl;
         for (j = 0; j < v->n_sample; ++j) {
             bcf_fmt_t *f = &fmt[i];
             if ( !f->p ) continue;
               
             this->bcf_format_gt_new1(f,j,genotype +j);
-
+	    count++;
             n_geno_count += genotype[j];
         }
     }
 
-
+    //std::cout<<n_geno_count<<endl;
+    //std::cout<<count<<endl;
     return n_geno_count;
     
 }
@@ -271,7 +285,25 @@ int SetRegion(char *fname, char * regions_list){
 */
 
 
+void VCFFileReader::getid(char * samplesid){
 
+	//samplesid=this->hdr->samples;
+   	for (size_t i = 0; i < this->nSample; ++i)
+	{
+
+
+		
+
+		if(samplesid != NULL){
+			int start_id = 1024 * i;//SNP_ID_SIZE_MAX 1024
+			strncpy(samplesid + start_id, this->hdr->samples[i],1024-1);
+			//printf("NAME: %s\n", ss->m_snp.GetAt(i)->m_name);
+					
+		}
+	}
+
+  
+}
 
 
 //==========================================================
@@ -485,17 +517,34 @@ int	Get_Next_Genotypes(int * genotype, int * pos){
 
 
 
-void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, int * pos, char * snpid){
-     
+void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, int * pos, char * snpid,char* A1, char* A2){
+	
     	int nsample= size;
 	if (this->flag==0){
 	if (bcf_read1(this->fp, this->hdr, this->v)>=0 ) { 
 		bcf_unpack(this->v, BCF_UN_ALL);
 	
-		
 		strncpy(chr, this->hdr->id[BCF_DT_CTG][this->v->rid].key, 100-1);		
         	*pos = v->pos + 1;
 		
+		std::string A1_s="";
+	        std::string A2_s="";
+        
+		if (v->n_allele > 0) A1_s=v->d.allele[0];
+        	else A1_s=".";
+        	if (v->n_allele > 1) {
+            		for (int i = 1; i < v->n_allele; ++i) {
+                		A2_s +=v->d.allele[i];
+            		}
+        	} else A2_s=".";
+		//std::cout<<A1_s<<endl;
+		//std::cout<<A2_s<<endl;
+		strcpy(A1,A1_s.c_str());
+		strcpy(A2,A2_s.c_str());
+		//std::cout<<A1<<endl;
+		//std::cout<<A2<<endl;
+		
+
 		strncpy(snpid , this->v->d.id, SNP_ID_SIZE_MAX-1);
 
 		//std::cout <<snpid << endl;
@@ -526,14 +575,12 @@ void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, in
 		*pos = line->pos + 1;	
 		strncpy(snpid , line->d.id, SNP_ID_SIZE_MAX-1);
 		memset(Z, 0, sizeof(int)* nsample);
-		this->v = line;
+		this->v=line;
 		int n_geno_count = this->GetGenotype(this->hdr, this->v, Z );
 
 
 	} 
 	
-
-
 
 	}
 
@@ -544,8 +591,8 @@ void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, in
 
 
 
-void VCFFileReader::BCF_oneline1(double* Z, int* myerror, int  size , char * chr, int * pos, char * snpid){
-     
+void VCFFileReader::BCF_oneline1(double* Z, int* myerror, int  size , char * chr, int * pos, char * snpid, char* A1, char* A2){
+      
     	int nsample= size;
 	if (this->flag==0){
 	if (bcf_read1(this->fp, this->hdr, this->v)>=0 ) { 
@@ -553,8 +600,25 @@ void VCFFileReader::BCF_oneline1(double* Z, int* myerror, int  size , char * chr
 	
 		
 		strncpy(chr, this->hdr->id[BCF_DT_CTG][this->v->rid].key, 100-1);		
-        	*pos = v->pos + 1;
-		
+	       	*pos = v->pos + 1;
+
+		std::string A1_s="";
+	        std::string A2_s="";
+        
+
+		if (v->n_allele > 0) A1_s=v->d.allele[0];
+        	else A1_s=".";
+        	if (v->n_allele > 1) {
+            		for (int i = 1; i < v->n_allele; ++i) {
+                		A2_s +=v->d.allele[i];
+            		}
+        	} else A2_s=".";
+		//std::cout<<A1_s<<endl;
+		//std::cout<<A2_s<<endl;
+		strcpy(A1,A1_s.c_str());
+		strcpy(A2,A2_s.c_str());
+		//std::cout<<A1<<endl;
+		//std::cout<<A2<<endl;
 		strncpy(snpid , this->v->d.id, SNP_ID_SIZE_MAX-1);
 
 		//std::cout <<snpid << endl;
@@ -585,7 +649,6 @@ void VCFFileReader::BCF_oneline1(double* Z, int* myerror, int  size , char * chr
 		strncpy(snpid , line->d.id, SNP_ID_SIZE_MAX-1);
 		memset(Z, 0, sizeof(int)* nsample);
 		this->v=line;
-
 		int n_geno_count = this->GetGenotype1(this->hdr, this->v, Z );
 
 	} 

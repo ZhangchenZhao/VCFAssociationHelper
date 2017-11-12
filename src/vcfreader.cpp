@@ -520,6 +520,8 @@ int	Get_Next_Genotypes(int * genotype, int * pos){
 void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, int * pos, char * snpid,char* A1, char* A2){
 	
     	int nsample= size;
+	std::string A1_s="";
+        std::string A2_s="";
 	if (this->flag==0){
 	if (bcf_read1(this->fp, this->hdr, this->v)>=0 ) { 
 		bcf_unpack(this->v, BCF_UN_ALL);
@@ -527,8 +529,7 @@ void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, in
 		strncpy(chr, this->hdr->id[BCF_DT_CTG][this->v->rid].key, 100-1);		
         	*pos = v->pos + 1;
 		
-		std::string A1_s="";
-	        std::string A2_s="";
+
         
 		if (v->n_allele > 0) A1_s=v->d.allele[0];
         	else A1_s=".";
@@ -576,6 +577,20 @@ void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, in
 		strncpy(snpid , line->d.id, SNP_ID_SIZE_MAX-1);
 		memset(Z, 0, sizeof(int)* nsample);
 		this->v=line;
+
+		if (v->n_allele > 0) A1_s=v->d.allele[0];
+        	else A1_s=".";
+        	if (v->n_allele > 1) {
+            		for (int i = 1; i < v->n_allele; ++i) {
+                		A2_s +=v->d.allele[i];
+            		}
+        	} else A2_s=".";
+		//std::cout<<A1_s<<endl;
+		//std::cout<<A2_s<<endl;
+		strcpy(A1,A1_s.c_str());
+		strcpy(A2,A2_s.c_str());
+
+
 		int n_geno_count = this->GetGenotype(this->hdr, this->v, Z );
 
 
@@ -594,6 +609,8 @@ void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, in
 void VCFFileReader::BCF_oneline1(double* Z, int* myerror, int  size , char * chr, int * pos, char * snpid, char* A1, char* A2){
       
     	int nsample= size;
+	std::string A1_s="";
+	std::string A2_s="";
 	if (this->flag==0){
 	if (bcf_read1(this->fp, this->hdr, this->v)>=0 ) { 
 		bcf_unpack(this->v, BCF_UN_ALL);
@@ -602,8 +619,7 @@ void VCFFileReader::BCF_oneline1(double* Z, int* myerror, int  size , char * chr
 		strncpy(chr, this->hdr->id[BCF_DT_CTG][this->v->rid].key, 100-1);		
 	       	*pos = v->pos + 1;
 
-		std::string A1_s="";
-	        std::string A2_s="";
+		
         
 
 		if (v->n_allele > 0) A1_s=v->d.allele[0];
@@ -646,9 +662,22 @@ void VCFFileReader::BCF_oneline1(double* Z, int* myerror, int  size , char * chr
         }
 		strncpy(chr, g_hdr->id[BCF_DT_CTG][line->rid].key, 100-1);
 		*pos = line->pos + 1;	
+		this->v=line;
+		if (v->n_allele > 0) A1_s=v->d.allele[0];
+        	else A1_s=".";
+        	if (v->n_allele > 1) {
+            		for (int i = 1; i < v->n_allele; ++i) {
+                		A2_s +=v->d.allele[i];
+            		}
+        	} else A2_s=".";
+		//std::cout<<A1_s<<endl;
+		//std::cout<<A2_s<<endl;
+		strcpy(A1,A1_s.c_str());
+		strcpy(A2,A2_s.c_str());
+
 		strncpy(snpid , line->d.id, SNP_ID_SIZE_MAX-1);
 		memset(Z, 0, sizeof(int)* nsample);
-		this->v=line;
+
 		int n_geno_count = this->GetGenotype1(this->hdr, this->v, Z );
 
 	} 

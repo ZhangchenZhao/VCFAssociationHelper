@@ -286,7 +286,7 @@ GetGeno<-function(VCF_info,chromosome=1,pos_start=NA,pos_end=NA){
 	}
 
 	close(con)
-
+	GetGenotypesRegionVCF( VCF_info,chromosome,pos_end+1,10E15);
 	return(out)
 
 

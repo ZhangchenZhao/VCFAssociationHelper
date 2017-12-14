@@ -214,7 +214,7 @@ GetGeno<-function(VCF_info,chromosome=1,pos_start=NA,pos_end=NA){
 			print(sprintf("The end position is also missing.The whole chromosome will be read.\n"))
 			regions=region
 		} else {
-			print(sprintf("The program will r ead from the position 1.\n"))
+			print(sprintf("The program will read from the position 1.\n"))
 			pos_start=1
 			regions=paste(region,":",pos_start,"-",pos_end,sep="")
 		}

@@ -50,7 +50,8 @@ Set_Index=1
 
 #Get the genotypes from SSD.
 geno=GetGenotypesSSD(ssdtemp, Set_Index, is_ID = FALSE)
-
+dim(geno)
+head(geno)
 #SSD must be closed after finishing the test!
 CloseSSD()
 
@@ -65,9 +66,12 @@ vcf_info=OpenVCF(VCF_file,"GT")
 
 #Get the genotype information of the first line in VCF file.
 geno1=GetGenotypesVCF( vcf_info)
-
+geno1[[1]]
+sum(geno1[[2]])
 #Get the genotype information of the second line in VCF file.
 geno2=GetGenotypesVCF( vcf_info)
+geno2[[1]]
+sum(geno2[[2]])
 CloseVCF()
 
 
@@ -81,7 +85,11 @@ vcf_info=OpenVCF(VCF_file,"GT")
 #Method 1: read genotype information one line by one line
 GetGenotypesRegionVCF( vcf_info,22,16000000,17000000)
 geno1=GetGenotypesVCF( vcf_info)
+geno1[[1]]
+sum(geno1[[2]])
 geno2=GetGenotypesVCF( vcf_info)
+geno2[[1]]
+sum(geno2[[2]])
 
 #Method 2: read all selected genotype information
 geno_all=GetGeno( vcf_info,22,16000000,17000000)

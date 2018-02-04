@@ -39,14 +39,14 @@ void getid_work(char * samplesid)
 extern "C" {
 
 
-void R_BCF_oneline( int *Z, int * err, int * size, char* chr, int * pos,   char * snpid,char ** allele1, char ** allele2){
+void R_BCF_oneline( int *Z, int * err, int * size, char* chr, int * pos,   char * snpid,char * allele1, char * allele2){
 
-	BCF_oneline_work( Z, err, * size, chr, pos, snpid, allele1[0], allele2[0]);
+	BCF_oneline_work( Z, err, * size, chr, pos, snpid, allele1, allele2);
 }
 
-void R_BCF_oneline1( double *Z, int * err, int * size, char* chr, int * pos,   char * snpid,char ** allele1, char ** allele2){
+void R_BCF_oneline1( double *Z, int * err, int * size, char* chr, int * pos,   char * snpid,char * allele1, char * allele2){
 
-	BCF_oneline_work1( Z, err, * size, chr, pos, snpid,allele1[0], allele2[0]);
+	BCF_oneline_work1( Z, err, * size, chr, pos, snpid,allele1, allele2);
 }
 
 void R_Open_VCF(char** VCF_File, int * err, size_t * size, int * form)
@@ -524,11 +524,13 @@ void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, in
         std::string A2_s="";
 	if (this->flag==0){
 	if (bcf_read1(this->fp, this->hdr, this->v)>=0 ) { 
+		//std::cout<<"Step 1:";
 		bcf_unpack(this->v, BCF_UN_ALL);
-	
-		strncpy(chr, this->hdr->id[BCF_DT_CTG][this->v->rid].key, 100-1);		
+		//std::cout<<"Step 2:";
+		strncpy(chr, this->hdr->id[BCF_DT_CTG][this->v->rid].key, 100-1);
+		//std::cout<<"Step 3:"<<endl;		
         	*pos = v->pos + 1;
-		
+		//std::cout<<*pos<<endl;
 
         
 		if (v->n_allele > 0) A1_s=v->d.allele[0];
@@ -538,6 +540,8 @@ void VCFFileReader::BCF_oneline(int* Z, int* myerror, int  size , char * chr, in
                 		A2_s +=v->d.allele[i];
             		}
         	} else A2_s=".";
+		//std::cout<<v->d.allele[0]<<endl;
+		//std::cout<<v->d.allele[1]<<endl;	
 		//std::cout<<A1_s<<endl;
 		//std::cout<<A2_s<<endl;
 		strcpy(A1,A1_s.c_str());

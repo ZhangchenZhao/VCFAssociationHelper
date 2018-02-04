@@ -1,5 +1,3 @@
-lines.env <- new.env()
-
 callLocal <- function() {
     .Call("localfunc")
 }
@@ -9,70 +7,14 @@ htsVersion <- function() {
 }
 
 
-
-
-
-GetGenotypesVCF<-function(VCF_info){
-######
-
-	
-############
-	
-	if(get("Helper_Lines_OPEN.isOpen", envir=lines.env) == 0){
-		stop("VCF file is not opened. Please open it first!")
-	}
-
-##	id1<-which(SSD_INFO$SetInfo$SetIndex == Set_Index)
-##	if(length(id1) == 0){
-##		MSG<-sprintf("Error: cannot find set index [%d] from SSD!\n", Set_Index)
-##		stop(MSG)
-##	}	
-##	Set_Index<-SSD_INFO$SetInfo$SetIndex[id1]
-	size<-VCF_info$samplesize
-	CHR_SIZE=100	
-	chr=raw(CHR_SIZE)
-	pos=0
-	snpid="null"
-	Z<-rep(9,size)
-	err_code<-0
-	SNP_ID_SIZE=1024
-	snpid=raw(SNP_ID_SIZE)
-	A1="x"
-	A2="x"
-	if (VCF_info$format=="GT"){
-	temp<-.C("R_BCF_oneline",as.integer(Z), as.integer(err_code),as.integer(size),chr,as.integer(pos),snpid,as.character(A1),as.character(A2),PACKAGE="VCFAssociationHelper")
-	}
-	if (VCF_info$format=="DS"){
-	temp<-.C("R_BCF_oneline1",as.double(Z), as.integer(err_code),as.integer(size),chr,as.integer(pos),snpid,as.character(A1),as.character(A2),PACKAGE="VCFAssociationHelper")
-	}
-	error_code<-temp[[2]]
-		
-	geno=list()
-	##print(temp[[1]])	
-	##geno$temp=	
-	Z.out.t<-matrix(temp[[1]],byrow=TRUE, nrow=1)
-	
-	SNPID=rawToChar(temp[[6]])
-	chromosome=rawToChar(temp[[4]])
-	position=temp[[5]]
-	allele1=temp[[7]]
-	allele2=temp[[8]]
-	geno$info=cbind(SNPID,chromosome,position,allele1,allele2)
-	geno$genotypes=Z.out.t
-
-	return(geno)
-
-}
-
-############
-	
-
-
+lines.env <- new.env()
 
 
 assign("Helper_Lines_OPEN.isOpen", 0, envir=lines.env)
 assign("Helper_Lines_OPEN.FileName","", envir=lines.env)
 
+
+	
 CloseVCF<-function(){
 
 	if(get("Helper_Lines_OPEN.isOpen", envir=lines.env) == 1){
@@ -81,6 +23,7 @@ CloseVCF<-function(){
 		,get("Helper_Lines_OPEN.FileName", envir=lines.env));
 		cat(Msg)
 		assign("Helper_Lines_OPEN.isOpen", 0, envir=lines.env);
+		assign("Helper_Lines_OPEN.FileName","", envir=lines.env)
 	} else{
 		Msg<-sprintf("No opened VCF file!\n");
 		cat(Msg)		
@@ -136,12 +79,77 @@ OpenVCF<-function(File.VCF,format="GT"){
 	ID.c<-apply(ID.m, 1, rawToChar)
 
 	INFO$samples=ID.c
-	MSG<-sprintf("Sample size of VCF is \n", INFO$samplesize)
-	cat(Msg)
+	MSG<-sprintf("Sample size of VCF is %i.\n", INFO$samplesize)
+	cat(MSG)
 	
 	return(INFO)
 	
 }
+
+
+GetGenotypesVCF<-function(VCF_info){
+######
+
+	
+############
+	#print("R1")
+	if(get("Helper_Lines_OPEN.isOpen", envir=lines.env) == 0){
+		stop("VCF file is not opened. Please open it first!")
+	}
+
+##	id1<-which(SSD_INFO$SetInfo$SetIndex == Set_Index)
+##	if(length(id1) == 0){
+##		MSG<-sprintf("Error: cannot find set index [%d] from SSD!\n", Set_Index)
+##		stop(MSG)
+##	}	
+##	Set_Index<-SSD_INFO$SetInfo$SetIndex[id1]
+	size<-VCF_info$samplesize
+	CHR_SIZE=100	
+	chr=raw(CHR_SIZE)
+	pos=0
+	snpid="null"
+	Z<-rep(9,size)
+	err_code<-0
+	SNP_ID_SIZE=1024
+	snpid=raw(SNP_ID_SIZE)
+	A1=raw(CHR_SIZE)
+	A2=raw(CHR_SIZE)
+	#print("R2")
+	if (VCF_info$format=="GT"){
+	temp<-.C("R_BCF_oneline",as.integer(Z), as.integer(err_code),as.integer(size),chr,as.integer(pos),snpid,A1,A2,PACKAGE="VCFAssociationHelper")
+	}
+	if (VCF_info$format=="DS"){
+	temp<-.C("R_BCF_oneline1",as.double(Z), as.integer(err_code),as.integer(size),chr,as.integer(pos),snpid,A1,A2,PACKAGE="VCFAssociationHelper")
+	}
+	##print(temp[[5]])
+	error_code<-temp[[2]]
+	##print(temp[[1]][1])	
+	geno=list()
+	##print(temp[[1]])	
+	##geno$temp=	
+	Z.out.t<-matrix(temp[[1]],byrow=TRUE, nrow=1)
+	##print(temp[[1]][1])
+
+	##print(temp[[6]])
+	##print(temp[[4]])
+	SNPID=rawToChar(temp[[6]])
+	chromosome=rawToChar(temp[[4]])
+	##print(SNPID)
+	##print(chromosome)
+	position=temp[[5]]
+	allele1=rawToChar(temp[[7]])
+	allele2=rawToChar(temp[[8]])
+	##print(position)
+	##print(allele1)
+	##print(allele2)
+	geno$info=cbind(SNPID,chromosome,position,allele1,allele2)
+	geno$genotypes=Z.out.t
+	##print(geno$info)
+	return(geno)
+
+}
+
+############
 
 
 

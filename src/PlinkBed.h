@@ -26,6 +26,7 @@ public:
     // Write one SNP info
     int     Write_OneSNP(const char * snp1, const char * chr, size_t pos, const char * A1, const char * A2, int * genotype);
     int     Write_OneSNP1(const char * snp1, const char * chr, size_t pos, const char * A1, const char * A2, int * genotype);
+    int     Write_OneSNP1_ds(const char * snp1, const char * chr, size_t pos, const char * A1, const char * A2, double * genotype);
     int     Write_FamFile(char ** SampleID);
     int     Close_BedBim_Files();
     int     Delete_All_Files();
@@ -61,6 +62,7 @@ protected:
 
 void BedFile_encode(int* temp_snp_info,char* encoded_snp_info, size_t nsample, size_t size_of_esi,bool IsMakePlinkFile);
 void BedFile_encode1(int* temp_snp_info,char* encoded_snp_info, size_t nsample, size_t size_of_esi, bool IsMakePlinkFile);
+void BedFile_encode1_ds(int* temp_snp_info,char* encoded_snp_info, size_t nsample, size_t size_of_esi, bool IsMakePlinkFile);
 void gTokenize(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters );
 
 #endif

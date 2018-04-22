@@ -17,7 +17,7 @@
 
 #include <algorithm>
 #include <vector>
-
+#include <math.h>
 #include "DArray.h"
 #include "PlinkBed.h"
 
@@ -62,9 +62,10 @@ public:
 	MwoFileReader(char* filename, int* myerror, char* info = NULL);
 	~MwoFileReader();
 	void prepare_out_array_print_snpset_to_file(snpset* ss, int n, int* Z,size_t size, int Is_MakeFile, int* myerror, char * SNPID=NULL);
+	void prepare_out_array_print_snpset_to_file_ds(snpset* ss, int set_num, double* Z, size_t Zsize, int Is_MakeFile, int* myerror, char * SNPID=NULL);	
 	void upload_offsets_table();
 	void get_set(size_t set_num, int* Z, size_t size, int* myerror,int Is_MakeFile = 1 , char * SNPID=NULL );
-
+	void get_set_ds(size_t set_num, double* Z, size_t size, int* myerror,int Is_MakeFile = 1 , char * SNPID=NULL );
 	//======================================================
 	//This function returns Total number of SNP Sets in current ".mwa"
 	//RETURN VALUE: Total Number of SNP Sets in the MWA file. 
@@ -115,6 +116,9 @@ private:
 	size_t* m_offsetarr;
 	size_t* m_set_size;
 
+	size_t m_format;
+	double* m_ds;
+	
 	void decode_byte(int* bits_val,char* buff, size_t* ind_count);
 	void Tokenize(const std::string& str,
                       std::vector<std::string>& tokens,

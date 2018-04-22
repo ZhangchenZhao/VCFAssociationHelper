@@ -188,6 +188,48 @@ int     CPlinkBed_Write::Write_OneSNP1(const char * snp1, const char * chr, size
 
 
 
+int     CPlinkBed_Write::Write_OneSNP1_ds(const char * snp1, const char * chr, size_t pos, const char * A1, const char * A2, double * genotype){
+    
+    char str[10000];
+    int * genotype_code=new int[m_nSample];
+    //int temp_debug=0;
+    for (int i=0; i<m_nSample; i++){
+	genotype_code[i]= (int)(genotype[i]*128+0.5);
+	//if (i==m_nSample-1) {std::cout<<"last "<<genotype_code[i]<<std::endl;}
+	//if (genotype_code[i]!=0){std::cout<<genotype_code[i]<<std::endl;}
+	//temp_debug=temp_debug+genotype_code[i];
+    }
+    
+    // Bim file
+    sprintf(str,"%s %s 0 %zu %s %s\n", chr,snp1, pos, A1, A2);
+    m_BimFile << str;
+//std::cout<<"I am    "<<temp_debug<<std::endl;
+    // Bed file
+    BedFile_encode1_ds(genotype_code, m_buffer, m_nSample, m_size_of_esi,1);
+	//printf("[%d]\n",m_nSample);
+	//printf("[%d:%d:%d:%d:%d:%d]\n",genotype[0],genotype[1],genotype[2],genotype[3],genotype[4],genotype[5]);
+	//printf("[%c:%c:%c:%c:%c:%c]\n",m_buffer[0],m_buffer[1],m_buffer[2],m_buffer[3],m_buffer[4],m_buffer[5]);
+	//printf(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(m_buffer[0]));
+	//printf("\n");
+	//printf(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(m_buffer[1]));
+	//printf("\n");
+//std::cout<<"I am done666"<<std::endl;
+    m_BedFile.write(m_buffer, m_nSample* sizeof(char));
+
+//std::cout<<"I am done6666"<<m_buffer[0]<<std::endl;
+    
+   	if (!m_BedFile)
+	{
+		return 0;
+	}
+    
+    
+    m_nSNP++;
+    return 1;
+    
+    
+}
+
 
 int     CPlinkBed_Write::Write_FamFile(char ** SampleID){
     
@@ -389,6 +431,59 @@ void BedFile_encode1(int* temp_snp_info,char* encoded_snp_info, size_t nsample, 
 			encoded_snp_info[ind4enc-1] = (char)number;
 			//=============================================
 		}
+	}
+}
+
+
+
+
+void BedFile_encode1_ds(int* temp_snp_info,char* encoded_snp_info, size_t nsample, size_t size_of_esi, bool IsMakePlinkFile)
+{
+    
+	size_t i = 0;
+	unsigned int j = 0;
+	int number = 0;
+	size_t ind4enc = 0;
+	int a[8];
+    	int temp;
+	double temp1;
+	//=======================================================================================
+	// converting every 4 bytes of temp_snp_info to "a"
+	// "a"- array of 8 integers ("kind of" 8 bits) that will be converted to one encoded number
+	// possible values for temp_snp_info = 9,1,2,0
+	while (i < nsample)
+	{
+		//temp=temp_snp_info[i];
+		//memset(a, 0, sizeof(a));
+		//for (j = 0; j < 8; ++j){
+		//	temp1=temp/2^(7-j);
+		//	if (temp1>=1){a[j]=1;}
+		//	temp=temp-a[j]*2^(7-j);
+		//}
+		
+		//ind4enc ++;
+		//if (ind4enc == nsample)
+		//	break;
+		//else
+		//{
+		number = temp_snp_info[i];
+			//==============================================
+			//converting 8 ints of "a" to one encoded number
+			//for example a= 00100010 "number" will be: 34
+			//for (int  ii = 0; ii < 8; ++ii){
+			//	if(IsMakePlinkFile){
+			//		number += a[ii] * (int)pow(2.0,ii);
+			//	} else {
+			//		number += a[ii] * (int)pow(2.0,(7-ii));
+			//	}
+			//}
+			//saving this encoded number.
+		encoded_snp_info[i] = (char)number;
+		//if (i==21240){std::cout<<"my love"<<encoded_snp_info[i] <<std::endl;}
+		//if (i==nsample){std::cout<<"my love"<<encoded_snp_info[i] <<std::endl;}
+			//=============================================
+		//}
+		i++;
 	}
 }
 

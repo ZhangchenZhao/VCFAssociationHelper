@@ -32,9 +32,9 @@ void Convert_BCFtoPlink(char **  PlinkPrefix,  char ** BCF_file, int * nmax, int
 	
 }
 
-void Convert_BCFtoSSD( char **  ssd,char ** PlinkPrefix, char ** BCF_file, char ** SetID, int * SetIDtype, int * nmax, int * err) {
+void Convert_BCFtoSSD( char **  ssd,char ** PlinkPrefix, char ** BCF_file, char ** SetID, int * SetIDtype, int * nmax, int * err, int * format) {
     
-	int re = Convert_BCF_to_SSD_Work(ssd[0], PlinkPrefix[0],BCF_file[0], SetID[0], SetIDtype[0], nmax[0]);
+	int re = Convert_BCF_to_SSD_Work(ssd[0], PlinkPrefix[0],BCF_file[0], SetID[0], SetIDtype[0], nmax[0],format[0]);
 	err[0] = re;
 	
 }
@@ -71,12 +71,22 @@ void R_Get_Genotypes( int *Set_number, int * Z , int * size, int *Is_MakeFile, i
 	Get_Genotypes( *Set_number, Z, *size,  * Is_MakeFile, err);
 }	
 
+void R_Get_Genotypes_ds( int *Set_number, double * Z , int * size, int *Is_MakeFile, int * err) // set_number base on INFO file. The result will be printed to file.
+{
+	Get_Genotypes_ds( *Set_number, Z, *size,  * Is_MakeFile, err);
+}
+
 
 void R_Get_Genotypes_withID( int *Set_number, int * Z , char * SNPID, int * size, int *Is_MakeFile, int * err) // set_number base on INFO file. The result will be printed to file.
 {
 	Get_Genotypes_withID( *Set_number, Z, SNPID,  *size,  * Is_MakeFile, err);
 }	
 
+
+void R_Get_Genotypes_withID_ds( int *Set_number, double * Z , char * SNPID, int * size, int *Is_MakeFile, int * err) // set_number base on INFO file. The result will be printed to file.
+{
+	Get_Genotypes_withID_ds( *Set_number, Z, SNPID,  *size,  * Is_MakeFile, err);
+}	
 
 
 

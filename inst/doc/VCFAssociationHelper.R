@@ -20,7 +20,7 @@ SetID = paste(path.package("VCFAssociationHelper"),"/extdata/SetID1.txt",sep="")
 SSD=paste(path.package("VCFAssociationHelper"),"/extdata/SSD1",sep="") 
 SetIDFormat="SNPID"
 nmax=100000
-system.time({Convert_VCFtoSSD ( VCF_file,  SSD, SetID, SetIDFormat, nmax)})
+system.time({Convert_VCFtoSSD ( VCF_file,  format="GT",SSD, SetID, SetIDFormat, nmax)})
 
 # SetID with POS
 VCF_file =paste(path.package("VCFAssociationHelper"),"/extdata/Example.vcf.gz",sep="")  
@@ -28,7 +28,7 @@ SetID = paste(path.package("VCFAssociationHelper"),"/extdata/SetID2.txt",sep="")
 SSD=paste(path.package("VCFAssociationHelper"),"/extdata/SSD2",sep="") 
 SetIDFormat="POS"
 nmax=100000
-system.time({Convert_VCFtoSSD ( VCF_file,  SSD, SetID, SetIDFormat, nmax)})
+system.time({Convert_VCFtoSSD ( VCF_file, format="GT", SSD, SetID, SetIDFormat, nmax)})
 
 # SetID with SNPID
 VCF_file =paste(path.package("VCFAssociationHelper"),"/extdata/Example.vcf.gz",sep="")  
@@ -36,7 +36,7 @@ SetID = paste(path.package("VCFAssociationHelper"),"/extdata/SetID3.txt",sep="")
 SSD=paste(path.package("VCFAssociationHelper"),"/extdata/SSD3",sep="") 
 SetIDFormat="Region"
 nmax=100000
-system.time({Convert_VCFtoSSD ( VCF_file,  SSD, SetID, SetIDFormat, nmax)})
+system.time({Convert_VCFtoSSD ( VCF_file,  format="GT",SSD, SetID, SetIDFormat, nmax)})
 
 
 ###################################################	

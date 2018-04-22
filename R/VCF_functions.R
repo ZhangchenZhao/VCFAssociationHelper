@@ -66,16 +66,17 @@ Read_File_Info<-function(File.Info){
 
 	Check_File_Exists(File.Info)
 	
-	info1<-read.table(File.Info, header=FALSE, nrows= 6, sep='\t')
-	info2<-read.table(File.Info, header=FALSE, skip=7, sep='\t', stringsAsFactors=FALSE,comment.char = "")
+	info1<-read.table(File.Info, header=FALSE, nrows= 7, sep='\t')
+	info2<-read.table(File.Info, header=FALSE, skip=8, sep='\t', stringsAsFactors=FALSE,comment.char = "")
 
 	INFO<-list()
-	INFO$WindowSize<-info1[1,1]
-	INFO$MAFConvert<-info1[2,1]
-	INFO$nSNPs<-info1[3,1]	
-	INFO$nSample<-info1[4,1]
-	INFO$nDecodeSize<-info1[5,1]
-	INFO$nSets<-info1[6,1]
+	INFO$WindowSize<-as.numeric(as.character(info1[1,1]))
+	INFO$MAFConvert<-as.numeric(as.character(info1[2,1]))
+	INFO$nSNPs<-as.numeric(as.character(info1[3,1]))	
+	INFO$nSample<-as.numeric(as.character(info1[4,1]))
+	INFO$format<-as.character(info1[5,1])
+	INFO$nDecodeSize<-as.numeric(as.character(info1[6,1]))
+	INFO$nSets<-as.numeric(as.character(info1[7,1]))
 	INFO$SetInfo<-data.frame(SetIndex= info2[,1], SetID = as.character(info2[,3])
 	, SetSize = info2[,4], Offset = info2[,2],stringsAsFactors=FALSE)
 
@@ -115,8 +116,16 @@ Convert_VCFtoPlink <- function( VCF_file, Plink_file, nmax=-1) {
 
 
 
-Convert_VCFtoSSD <- function(VCF_file, SSD_file, SetID_file=NULL, SetIDFormat, nmax=-1) {
-    
+Convert_VCFtoSSD <- function(VCF_file, format="GT",SSD_file,  SetID_file=NULL, SetIDFormat, nmax=-1) {
+    if (format!="GT"){
+	if (format!="DS"){
+		Msg<-sprintf("VCF_file Reading Format is wrong!\n")
+		stop(Msg)
+	}
+    }
+    if (format=="GT"){formatcode=0}
+    if (format=="DS"){formatcode=1}
+   
     
     if (is.null(SetID_file)) {
     	SetID_file=paste(path.package("VCFAssociationHelper"),"/extdata/refGene.txt",sep="")
@@ -152,7 +161,7 @@ Convert_VCFtoSSD <- function(VCF_file, SSD_file, SetID_file=NULL, SetIDFormat, n
 
 		
 	print(PlinkPrefix)
-    temp<-.C("Convert_BCFtoSSD", as.character(SSD_file), as.character(PlinkPrefix),as.character(VCF_file),as.character(SetID_file), as.integer(SetIDtype),as.integer(nmax), as.integer(err_code))
+    temp<-.C("Convert_BCFtoSSD", as.character(SSD_file), as.character(PlinkPrefix),as.character(VCF_file),as.character(SetID_file), as.integer(SetIDtype),as.integer(nmax), as.integer(err_code),as.integer(formatcode))
 	error_code<-temp[[7]]
 	cat(error_code)
 	
@@ -200,6 +209,9 @@ OpenSSD<-function(File.SSD, File.Info){
 
 	# Read Info File
 	INFO<-Read_File_Info(File.Info)
+	##format_code=0
+	##if (INFO$format=="DS"){ format_code=1}
+
 
 	# Read SSD File
 	temp<-.C("R_Open_MWA", as.character(File.SSD), as.character(File.Info)
@@ -251,6 +263,8 @@ GetGenotypesSSD<-function(SSD_INFO, Set_Index, is_ID = FALSE){
 	N.Sample<-SSD_INFO$nSample
 	size<-N.SNP * N.Sample
 
+	Z.out.t=NULL
+	if (SSD_INFO$format=="GT"){
 	Z<-rep(9,size)
 
 	if(!is_ID){
@@ -279,6 +293,40 @@ GetGenotypesSSD<-function(SSD_INFO, Set_Index, is_ID = FALSE){
 		
 		#SNPID.c1<<-SNPID.c
 		#SNPID.1<<-SNPID	
+	}
+	}
+
+
+	if (SSD_INFO$format=="DS"){
+	Z<-rep(9,size)
+
+	if(!is_ID){
+		temp<-.C("R_Get_Genotypes_ds",as.integer(Set_Index),as.double(Z),as.integer(size)
+		,as.integer(Is_MakeFile), as.integer(err_code), PACKAGE="VCFAssociationHelper")
+
+		error_code<-temp[[5]]
+		Print_Error_SSD(error_code)
+		
+		Z.out.t<-matrix(temp[[2]],byrow=TRUE, nrow=N.SNP)
+		
+	} else {
+		SNPID=raw(N.SNP* SNP_ID_SIZE)
+	
+		temp<-.C("R_Get_Genotypes_withID_ds",as.integer(Set_Index),as.double(Z), SNPID, as.integer(size)
+		,as.integer(Is_MakeFile), as.integer(err_code), PACKAGE="VCFAssociationHelper")
+
+		error_code<-temp[[6]]
+		Print_Error_SSD(error_code)
+		
+		SNPID.m<-matrix(temp[[3]], byrow=TRUE, nrow=N.SNP)
+		SNPID.c<-apply(SNPID.m, 1, rawToChar)
+
+		Z.out.t<-matrix(temp[[2]],byrow=TRUE, nrow=N.SNP)
+		rownames(Z.out.t)<-SNPID.c
+		
+		#SNPID.c1<<-SNPID.c
+		#SNPID.1<<-SNPID	
+	}
 	}
 	
 	return(t(Z.out.t))

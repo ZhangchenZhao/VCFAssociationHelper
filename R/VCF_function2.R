@@ -153,6 +153,77 @@ GetGenotypesVCF<-function(VCF_info){
 
 
 
+GetGenesVCF<-function(VCF_info,Gene_name){
+############
+	#print("R1")
+	if(get("Helper_Lines_OPEN.isOpen", envir=lines.env) == 0){
+		stop("VCF file is not opened. Please open it first!")
+	}
+
+##	id1<-which(SSD_INFO$SetInfo$SetIndex == Set_Index)
+##	if(length(id1) == 0){
+##		MSG<-sprintf("Error: cannot find set index [%d] from SSD!\n", Set_Index)
+##		stop(MSG)
+##	}	
+##	Set_Index<-SSD_INFO$SetInfo$SetIndex[id1]
+	err_code<-0
+
+	SetID_file=paste(path.package("VCFAssociationHelper"),"/extdata/refGene.txt",sep="")
+	
+	con <- file(SetID_file, "r")
+	flag2=0
+	line=1
+	out=list("SNP info"="","Genotype Matrix"="")
+	while( length(line) != 0 ) {
+     		line=readLines(con,n=1)
+		a=strsplit(line,"\t")
+		if (length(a)>=1){
+			if (a[[1]][13]==Gene_name){
+				chromosome=substr(a[[1]][3],4,20)
+				b1=strsplit(a[[1]][10],",",fixed=TRUE)
+				b2= strsplit(a[[1]][11],",",fixed=TRUE)
+				n1=length(b1[[1]])
+				n2=length(b2[[1]])
+				for (i in 1:min(n1,n2)){
+					
+					pos_int1=as.numeric(b1[[1]][i])
+					pos_int2=as.numeric(b2[[1]][i])
+					geno_temp=GetGenotypesRegionVCF( VCF_info,chromosome,pos_int1,pos_int2);
+					geno1=GetGenotypesVCF(VCF_info)
+								
+					while (geno1[[1]][1]!=""){
+						if (flag2==0){out=geno1;flag2=1;} else {
+							out[[1]]=rbind(out[[1]],geno1[[1]])
+							out[[2]]=rbind(out[[2]],geno1[[2]])
+						}
+						geno1=GetGenotypesVCF(VCF_info)
+	
+					
+
+					}
+
+				}
+
+			}
+		
+		}	
+	}
+
+	close(con)
+	out1=list("SNP info"="","Genotype Matrix"="")
+	if (out[[1]][1]==""){out1=out} else {
+		kk=duplicated(out[[1]])
+		out1[[1]]=out[[1]][!kk, ]
+		out1[[2]]=out[[2]][!kk, ]
+	}
+
+
+
+	return(out1)
+
+}
+
+
 
 GetGenotypesRegionVCF<-function(VCF_info,chromosome=1,pos_start=NA,pos_end=NA){
  	options("scipen"=100, "digits"=4)

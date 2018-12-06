@@ -8,6 +8,6 @@ Maintainer: Zhangchen Zhao <zczhao@umich.edu>
 Description: Functions for reading VCF file, transferring VCF file to Plink file and SSD file, and reading SSD file for association test.  
 Depends: Rhtslib
 License: GPL(>=2)
-LinkingTo: Rhtslib, zlibbioc, parallel
+LinkingTo: Rhtslib, zlibbioc, parallel, Rcpp, Matrix, methods
 NeedsCompilation: yes
 Packaged: 2017-02-10 15:53:57 UTC; LEE7801

@@ -172,6 +172,60 @@ Convert_VCFtoSSD <- function(VCF_file, format="GT",SSD_file,  SetID_file=NULL, S
 
 
 
+
+
+Convert_PlinktoSSD <- function(File.bed,File.bim,File.fam, SSD_file, nmax=-1) {
+#    if (format!="GT"){
+#	if (format!="DS"){
+#		Msg<-sprintf("VCF_file Reading Format is wrong!\n")
+#		stop(Msg)
+#	}
+#   }
+#    if (format=="GT"){formatcode=0}
+#    if (format=="DS"){formatcode=1}
+   
+    
+#    if (is.null(SetID_file)) {
+#    	SetID_file=paste(path.package("VCFAssociationHelper"),"/extdata/refGene.txt",sep="")
+#		print(sprintf("The SetID is missing. refGene (GRCh37) will be used to define genes.\n"))
+#		print(sprintf("refGene file can be found at: %s\n", SetID_file))
+#		SetIDFormat="Ref"
+#	}
+#	if (is.na(SetIDFormat)) {
+#		Msg<-sprintf("SetID Format is missing!\n")
+#		stop(Msg)
+#	}
+	err_code<-0
+	File.bed<-normalizePath(File.bed ,mustWork =FALSE)
+	File.bim<-normalizePath(File.bim ,mustWork =FALSE)
+	File.fam<-normalizePath(File.fam ,mustWork =FALSE)
+
+
+
+##PlinkPrefix<-SSD_file
+#	SetID_file<-normalizePath(SetID_file ,mustWork =FALSE)
+	SSD_file<-normalizePath(SSD_file ,mustWork =FALSE)
+	PlinkPrefix<-paste(SSD_file,"plink",sep=".")
+	ssdinfo<-paste(SSD_file,"info",sep=".")
+	Check_File_Exists(File.bed)	
+	Check_File_Exists(File.bim)
+	Check_File_Exists(File.fam)
+
+	print(PlinkPrefix)
+	SetID_file=paste(path.package("VCFAssociationHelper"),"/extdata/refGene.txt",sep="")
+
+    temp<-.C("Convert_PlinktoSSD", as.character(SSD_file), as.character(PlinkPrefix),as.character(File.bed),as.character(File.bim), 
+as.character(File.fam), as.character(SetID_file), as.integer(nmax), as.integer(err_code))
+	error_code<-temp[[7]]
+	cat(error_code)
+	
+
+
+	
+}
+
+
+
 ##################################################################
 #
 #	Open and Close the SSD Files
@@ -333,6 +387,78 @@ GetGenotypesSSD<-function(SSD_INFO, Set_Index, is_ID = FALSE){
 }
 
 
+
+#######################################################
+
+
+##################################################################
+#
+#	Get Genotype Matrix
+
+GetGenotypesSSD_New<-function(SSD_INFO, Set_Index){
+
+	SNP_ID_SIZE=1024 # it should be the same as SNP_ID_SIZE_MAX in error_messages.h 
+	
+	Is_MakeFile=0
+	if(get("Helper_SSD_FILE_OPEN.isOpen", envir=SSD1.env) == 0){
+		stop("SSD file is not opened. Please open it first!")
+	}
+
+	id1<-which(SSD_INFO$SetInfo$SetIndex == Set_Index)
+	if(length(id1) == 0){
+		MSG<-sprintf("Error: cannot find set index [%d] from SSD!\n", Set_Index)
+		stop(MSG)
+	}	
+	Set_Index<-SSD_INFO$SetInfo$SetIndex[id1]
+
+	err_code<-0
+	N.SNP_total<-SSD_INFO$SetInfo$SetSize[id1]
+	N.Sample<-SSD_INFO$nSample
+	
+	N.SNP_left=N.SNP_total 
+	Z.out.t=NULL
+	Z.out=NULL
+	Pos=SSD_INFO$SetInfo$Offset[id1]
+	if (SSD_INFO$format=="GT"){
+		flag=FALSE
+		while (flag==FALSE){
+			if (N.SNP_left>10 ){
+				N.SNP=10
+				N.SNP_left=N.SNP_left-10
+			} else {
+				flag=TRUE
+				N.SNP=N.SNP_left	
+			}
+			size<-N.SNP * N.Sample
+			Z<-rep(9,size)
+
+		
+			SNPID=raw(N.SNP* SNP_ID_SIZE)
+			
+			temp<-.C("R_Get_Genotypes_withID_new",as.integer(Set_Index),as.integer(Z), SNPID, as.integer(size)
+			,as.integer(Is_MakeFile), as.integer(err_code), as.character(Pos),as.integer(N.SNP),PACKAGE="VCFAssociationHelper")
+
+			error_code<-temp[[6]]
+			Print_Error_SSD(error_code)
+		
+			SNPID.m<-matrix(temp[[3]], byrow=TRUE, nrow=N.SNP)
+			SNPID.c<-apply(SNPID.m, 1, rawToChar)
+
+			Z.out.t<-Matrix(temp[[2]],byrow=TRUE, nrow=N.SNP,sparse=TRUE)
+			rownames(Z.out.t)<-SNPID.c
+	
+			Pos=temp[[7]]
+			rm(temp)
+			gc()					
+			Z.out=Matrix(rbind(Z.out,Z.out.t), sparse=TRUE)
+
+		}	
+	
+	}
+
+	
+	return(t(Z.out))
+}
 
 
 

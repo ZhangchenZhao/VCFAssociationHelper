@@ -41,10 +41,14 @@ read.VCF.SetID<-function(VCF_file, format="GT",SetID_file=NULL, SetIDFormat) {
 			if (line !=""){
 				a=strsplit(line," ")
 				b=strsplit(a[[1]][2],":",fixed=TRUE)
-				chr_temp=as.numeric(b[[1]][1])
+				chr_temp=b[[1]][1]
 				pos_temp=as.numeric(b[[1]][2])
 				GetGenotypesRegionVCF( temp,chr_temp,pos_temp,pos_temp)
 				tpgeno=GetGenotypesVCF(temp)
+				if (tpgeno[[1]][1]==""){
+					GetGenotypesRegionVCF( temp,paste("chr",chr_temp,sep=""),pos_temp,pos_temp)
+					tpgeno=GetGenotypesVCF(temp)
+				}
 				if (tpgeno[[1]][1]!=""){
 					if (is.null(out)){
 						out=tpgeno
@@ -66,8 +70,12 @@ read.VCF.SetID<-function(VCF_file, format="GT",SetID_file=NULL, SetIDFormat) {
 			if (line!=""){
 				line1=line
 				a=strsplit(line," ")
-				GetGenotypesRegionVCF( temp,as.numeric(a[[1]][2]),as.numeric(a[[1]][3]),as.numeric(a[[1]][4]))
+				GetGenotypesRegionVCF( temp,a[[1]][2],as.numeric(a[[1]][3]),as.numeric(a[[1]][4]))
 				tpgeno=GetGenotypesVCF(temp)
+				if (tpgeno[[1]][1]==""){
+					GetGenotypesRegionVCF( temp,paste("chr",a[[1]][2],sep=""),as.numeric(a[[1]][3]),as.numeric(a[[1]][4]))
+					tpgeno=GetGenotypesVCF(temp)
+				}
 				while (tpgeno[[1]][1]!=""){
 					if (is.null(out)){
 						out=tpgeno
@@ -177,6 +185,10 @@ test_core<-function(X){
 	fun=X[[4]]
 	GetGenotypesRegionVCF( VCF_info,Chr,pos_start,pos_end)
 	temp=GetGenotypesVCF(VCF_info)
+	if (temp[[1]][1]==""){
+		GetGenotypesRegionVCF( VCF_info,paste("chr",Chr,sep=""),pos_start,pos_end)
+		temp=GetGenotypesVCF(VCF_info)
+	}
 	out=NULL
 	while (temp[[1]][1]!=""){
 		if (as.numeric(temp[[1]][3])<=pos_end & as.numeric(temp[[1]][3])>=pos_start){

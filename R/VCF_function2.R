@@ -190,7 +190,10 @@ GetGenesVCF<-function(VCF_info,Gene_name){
 					pos_int2=as.numeric(b2[[1]][i])
 					geno_temp=GetGenotypesRegionVCF( VCF_info,chromosome,pos_int1,pos_int2);
 					geno1=GetGenotypesVCF(VCF_info)
-								
+					if (geno1[[1]][1]==""){
+						geno_temp=GetGenotypesRegionVCF( VCF_info,paste("chr",chromosome,sep=""),pos_int1,pos_int2);
+						geno1=GetGenotypesVCF(VCF_info)
+					}			
 					while (geno1[[1]][1]!=""){
 						if (flag2==0){out=geno1;flag2=1;} else {
 							out[[1]]=rbind(out[[1]],geno1[[1]])

@@ -40,14 +40,14 @@ public:
     std::string A2;
        std::string Chr;
    
-    size_t  Pos;
+       std::string  Pos;
     int dis;
     int flag;
     int total_counter_per_letter[2]; //= {0,0};
     int line_counter_per_letter[2]; //= {0,0};
 	//int flag;
     
-    SNP_info1(   std::string a,    std::string b,    std::string c,    std::string d,   size_t e, int f, int g){
+    SNP_info1(   std::string a,    std::string b,    std::string c,    std::string d,   std::string e, int f, int g){
         snp_id=a;
         A1=b;
         A2=c;
@@ -87,24 +87,6 @@ public:
 
 
 };
-
-
-class SetIDgene
-{
-    
-public:
-    std::string snp;
-    std::string setid4;
-    
-    SetIDgene(   std::string a,  std::string b){
-        snp=a;
-	setid4=b;
-    }
-
-
-};
-
-
 
 /*
 class generate_SSD

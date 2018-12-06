@@ -419,8 +419,10 @@ GetGenotypesSSD_New<-function(SSD_INFO, Set_Index){
 	Z.out.t=NULL
 	Z.out=NULL
 	Pos=SSD_INFO$SetInfo$Offset[id1]
+	
 	if (SSD_INFO$format=="GT"){
 		flag=FALSE
+		i=1
 		while (flag==FALSE){
 			if (N.SNP_left>10 ){
 				N.SNP=10
@@ -435,9 +437,13 @@ GetGenotypesSSD_New<-function(SSD_INFO, Set_Index){
 		
 			SNPID=raw(N.SNP* SNP_ID_SIZE)
 			
-			temp<-.C("R_Get_Genotypes_withID_new",as.integer(Set_Index),as.integer(Z), SNPID, as.integer(size)
-			,as.integer(Is_MakeFile), as.integer(err_code), as.character(Pos),as.integer(N.SNP),PACKAGE="VCFAssociationHelper")
+		
 
+			temp<-.C("R_Get_Genotypes_withID_new",as.integer(Set_Index),as.integer(Z), SNPID, as.integer(size)
+			,as.integer(Is_MakeFile), as.integer(err_code), as.integer(Pos),as.integer(N.SNP),PACKAGE="VCFAssociationHelper")
+
+	
+			
 			error_code<-temp[[6]]
 			Print_Error_SSD(error_code)
 		
@@ -446,18 +452,20 @@ GetGenotypesSSD_New<-function(SSD_INFO, Set_Index){
 
 			Z.out.t<-Matrix(temp[[2]],byrow=TRUE, nrow=N.SNP,sparse=TRUE)
 			rownames(Z.out.t)<-SNPID.c
-	
+			
+
 			Pos=temp[[7]]
 			rm(temp)
-			gc()					
-			Z.out=Matrix(rbind(Z.out,Z.out.t), sparse=TRUE)
+			gc()
+			if (i==1){Z.out<-Z.out.t} else {Z.out=Matrix(rbind(Z.out,Z.out.t), sparse=TRUE)}
+			i=i+1;		
+			#Z.out=Matrix(rbind(Z.out,Z.out.t), sparse=TRUE)
 
 		}	
 	
 	}
 
-	
-	return(t(Z.out))
+	return(Z.out)
 }
 
 

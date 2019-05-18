@@ -454,7 +454,7 @@ GetGenotypesSSD_New<-function(SSD_INFO, Set_Index){
 			rownames(Z.out.t)<-SNPID.c
 			
 
-			Pos=temp[[7]]
+			Pos=temp[[7]]-1
 			rm(temp)
 			gc()
 			if (i==1){Z.out<-Z.out.t} else {Z.out=Matrix(rbind(Z.out,Z.out.t), sparse=TRUE)}

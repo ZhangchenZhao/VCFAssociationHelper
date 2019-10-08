@@ -8,11 +8,11 @@
  #include <limits>
 #include "zlib.h"
 #include "zconf.h"
-#include "hts.h"
-#include "vcf.h"
-#include "kstring.h"
-#include "kseq.h"
-#include "khash_str2int.h"
+#include "htslib/hts.h"
+#include "htslib/vcf.h"
+#include "htslib/kstring.h"
+#include "htslib/kseq.h"
+#include "htslib/khash_str2int.h"
 #include "PlinkBed.h"
 #include <algorithm>
 #include <sstream>
